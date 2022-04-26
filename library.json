@@ -1,0 +1,40 @@
+{
+    "name": "iot-serial-intercomm",
+    "version": "0.4.0",
+    "description": "Serial intercomm protocol.",
+    "keywords": "serial,reliable,intercomm",
+    "authors": {
+        "name": "Lorenzo Delana",
+        "email": "lorenzo.delana@gmail.com"
+    },
+    "license": "MIT",
+    "frameworks": [
+        "arduino"
+    ],
+    "platforms": [
+        "ststm32"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/devel0/iot-serial-intercomm.git"
+    },
+    "examples": [
+        {
+            "name": "example01",
+            "base": "examples/example01",
+            "files": [
+                "host-A.cpp",
+                "host-B.cpp"
+            ]
+        }
+    ],
+    "dependencies": {    
+        "devel0/iot-utils": "^1.8.0"    
+    },
+    "export": {
+        "exclude": [
+            "src/debug-host-A.cpp",
+            "src/debug-host-B.cpp"
+        ]
+    }
+}
