@@ -41,8 +41,8 @@ The example01 shows two host implementation ( host A, host B ) corresponding to 
 
 ## Examples
 
-- [hostA example](examples/example01//host-A.cpp)
-- [hostB example](examples/example01//host-B.cpp)
+- [hostA example](https://github.com/devel0/iot-serial-intercomm/blob/569325662d767cdc149087717fe11196ebdc3700/examples/example01/host-A.cpp#L19)
+- [hostB example](https://github.com/devel0/iot-serial-intercomm/blob/569325662d767cdc149087717fe11196ebdc3700/examples/example01/host-B.cpp#L19)
 
 ## Upload/Debug
 
