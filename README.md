@@ -16,7 +16,7 @@ Reliable two host serial communication.
 Features:
 - send custom data (max len: 65536)
 - header and data with internet checksum
-- tunable retransmit ( IC_RESEND_TRIES_MAX, IC_RESEND_INTERVAL_MS )
+- tunable retransmit ( [IC_RESEND_TRIES_MAX, IC_RESEND_INTERVAL_MS](https://github.com/devel0/iot-serial-intercomm/blob/569325662d767cdc149087717fe11196ebdc3700/include/intercomm.h#L42) )
 
 ![](data/shot.png)
 
@@ -33,9 +33,14 @@ The example01 shows two host implementation ( host A, host B ) corresponding to 
 - host B
     - uses Serial3 (rx:PC11_ALT1, tx:PC10_ALT1) for communication
 
-- each host transmit its [host-protocol.h](examples/example01/host-protocol.h) info, containing host millis() to other
+- each host transmit its [host-protocol.h](https://github.com/devel0/iot-serial-intercomm/blob/569325662d767cdc149087717fe11196ebdc3700/examples/example01/host-protocol.h#L8) info, containing host millis() to other
 - each host print received other host protocol info using `rxDataCallback` callback
-- after each send `while (!ic.ackReceived()) { ... }` loop ensure packet is acknowledge by counterpart
+- after each send [while (!ic.ackReceived()) { ... }](https://github.com/devel0/iot-serial-intercomm/blob/569325662d767cdc149087717fe11196ebdc3700/examples/example01/host-A.cpp#L41) loop ensure packet is acknowledge by counterpart
+
+## Examples
+
+- [hostA example](examples/example01//host-A.cpp)
+- [hostB example](examples/example01//host-B.cpp)
 
 ## Upload/Debug
 
