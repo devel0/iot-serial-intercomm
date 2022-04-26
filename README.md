@@ -26,6 +26,8 @@ Features:
 
 ## Quickstart
 
+Install using vscode command palette `PlatformIO: New Terminal` referring to [platformio registry](https://registry.platformio.org/libraries/devel0/iot-serial-intercomm/installation) cli mode doc.
+
 The example01 shows two host implementation ( host A, host B ) corresponding to two nucleo F446RE configured as follow:
 
 - host A
