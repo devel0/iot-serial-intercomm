@@ -31,7 +31,7 @@ title: Intercomm
 
 |                | Name           |
 | -------------- | -------------- |
-|  | **[Intercomm](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-intercomm)**(HardwareSerial & _serial, unsigned long _speed, [InterCommRxDataCallback](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Files/intercomm_8h.md#typedef-intercommrxdatacallback) _rxCallback, int _max_data_len =256)  |
+|  | **[Intercomm](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-intercomm)**(HardwareSerial & _serial, unsigned long _speed, [InterCommRxDataCallback](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Files/intercomm_8h.md#typedef-intercommrxdatacallback) _rxCallback, int _max_data_len =256, int _resend_tries =3, uint32_t _resend_interval_ms =1000)  |
 |  | **[~Intercomm](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-~intercomm)**()  |
 | void | **[setup](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-setup)**()  |
 | void | **[send](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-send)**(const uint8_t * tx_data_buf, int len)  |
@@ -39,6 +39,7 @@ title: Intercomm
 | void | **[loop](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-loop)**()  |
 | uint32_t | **[getInvalidCrcTotal](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-getinvalidcrctotal)**() const  |
 | uint32_t | **[getRetransmissionTotal](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-getretransmissiontotal)**() const  |
+| bool | **[isInError](https://github.com/devel0/iot-serial-intercomm/tree/main/data/api/Classes/class_intercomm.md#function-isinerror)**() const  |
 
 
 
@@ -69,7 +70,9 @@ Intercomm(
     HardwareSerial & _serial,
     unsigned long _speed,
     InterCommRxDataCallback _rxCallback,
-    int _max_data_len =256
+    int _max_data_len =256,
+    int _resend_tries =3,
+    uint32_t _resend_interval_ms =1000
 )
 ```
 
@@ -313,6 +316,40 @@ inline uint32_t getInvalidCrcTotal() const
 
 ```cpp
 inline uint32_t getRetransmissionTotal() const
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### function isInError
+
+```cpp
+inline bool isInError() const
 ```
 
 
