@@ -3,7 +3,12 @@
 #include <sys-debug.h>
 #include "internet-checksum.h"
 
-Intercomm::Intercomm(HardwareSerial &_serial, unsigned long _speed, InterCommRxDataCallback _rxCallback, int _max_data_len) : serial(_serial), speed(_speed), rxCallback(_rxCallback), max_data_len(_max_data_len)
+Intercomm::Intercomm(HardwareSerial &_serial,
+                     unsigned long _speed,
+                     InterCommRxDataCallback _rxCallback,
+                     int _max_data_len,
+                     int _resend_tries,
+                     uint32_t _resend_interval_ms) : serial(_serial), speed(_speed), rxCallback(_rxCallback), max_data_len(_max_data_len), resend_tries(_resend_tries), resend_interval_ms(_resend_interval_ms)
 {
     rx_hdr_buf = new uint8_t[IC_HEADER_SIZE];
     rx_data_buf = new uint8_t[max_data_len];
@@ -28,6 +33,7 @@ void Intercomm::isend(const uint8_t *tx_data_buf, int len, int _tx_retry)
 {
     if (_tx_retry == 0 && waiting_ack)
     {
+        is_in_error = IC_ERRCODE_WAITING_ACK;
         error("waiting acknowledge");
     }
     else
@@ -81,13 +87,17 @@ bool Intercomm::ackReceived()
 
 void Intercomm::loop()
 {
+    if (is_in_error != IC_ERRCODE_NOERROR)
+        return;
+
     if (waiting_ack)
     {
-        if (tx_retry >= IC_RESEND_TRIES_MAX)
+        if (tx_retry >= resend_tries)
         {
+            is_in_error = IC_ERRCODE_RESEND_EXCEEDED;
             error("comm error ; not rx ack in time");
         }
-        if (millis() - tx_timestamp > IC_RESEND_INTERVAL_MS)
+        if (millis() - tx_timestamp > resend_interval_ms)
         {
             ++retransmission_total;
             isend(last_tx_data, tx_hdr.data_len, ++tx_retry);

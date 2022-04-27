@@ -39,9 +39,9 @@ struct IC_Header
 
 #define IC_HEADER_SIZE (sizeof(IC_Header))
 
-#define IC_RESEND_TRIES_MAX 3
-
-#define IC_RESEND_INTERVAL_MS 1000
+#define IC_ERRCODE_NOERROR 0
+#define IC_ERRCODE_RESEND_EXCEEDED 1
+#define IC_ERRCODE_WAITING_ACK 2
 
 typedef void (*InterCommRxDataCallback)(const uint8_t *buf, int buf_size);
 
@@ -49,6 +49,10 @@ typedef void (*InterCommRxDataCallback)(const uint8_t *buf, int buf_size);
 
 class Intercomm
 {
+    int is_in_error = 0;
+    int resend_tries = 3;
+    uint32_t resend_interval_ms = 1000;
+
     HardwareSerial &serial;
     unsigned long speed;
 
@@ -75,10 +79,15 @@ class Intercomm
     InterCommRxDataCallback rxCallback = NULL;
 
     void isend(const uint8_t *tx_data_buf, int len, int _tx_retry);        
-    void sendAck();
+    void sendAck();    
 
 public:
-    Intercomm(HardwareSerial &_serial, unsigned long _speed, InterCommRxDataCallback _rxCallback, int _max_data_len = 256);
+    Intercomm(HardwareSerial &_serial, 
+        unsigned long _speed,
+        InterCommRxDataCallback _rxCallback,
+        int _max_data_len = 256,
+        int _resend_tries = 3,
+        uint32_t _resend_interval_ms = 1000);
     ~Intercomm();
 
     void setup();
@@ -92,6 +101,7 @@ public:
 
     inline uint32_t getInvalidCrcTotal() const { return invalid_crc_total; }
     inline uint32_t getRetransmissionTotal() const { return retransmission_total; }
+    inline bool isInError() const { return is_in_error; }
 };
 
 #endif
