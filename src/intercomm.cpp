@@ -8,7 +8,8 @@ Intercomm::Intercomm(HardwareSerial &_serial,
                      InterCommRxDataCallback _rxCallback,
                      int _max_data_len,
                      int _resend_tries,
-                     uint32_t _resend_interval_ms) : serial(_serial), speed(_speed), rxCallback(_rxCallback), max_data_len(_max_data_len), resend_tries(_resend_tries), resend_interval_ms(_resend_interval_ms)
+                     uint32_t _resend_interval_ms,
+                     InterCommRxDatagramCallback _rxDatagramCallback) : serial(_serial), speed(_speed), rxCallback(_rxCallback), max_data_len(_max_data_len), resend_tries(_resend_tries), resend_interval_ms(_resend_interval_ms), rxDatagramCallback(_rxDatagramCallback)
 {
     rx_hdr_buf = new uint8_t[IC_HEADER_SIZE];
     rx_data_buf = new uint8_t[max_data_len];
@@ -41,6 +42,7 @@ void Intercomm::isend(const uint8_t *tx_data_buf, int len, int _tx_retry)
         tx_hdr.magic0 = 'I';
         tx_hdr.magic1 = 'C';
         tx_hdr.flag_ack = false;
+        tx_hdr.flag_datagram = false;
         tx_hdr.data_ack_chksum = 0;
         tx_hdr.data_len = len;
         auto tx_hdr_ptr = (const uint8_t *)&tx_hdr;
@@ -52,11 +54,32 @@ void Intercomm::isend(const uint8_t *tx_data_buf, int len, int _tx_retry)
         serial.write(tx_data_buf, len);
         serial.write((const uint8_t *)&tx_data_chksum, sizeof(uint16_t));
 
+        serial.flush();
+
         waiting_ack = true;
         tx_retry = _tx_retry;
         tx_timestamp = millis();
         last_tx_data = tx_data_buf;
     }
+}
+
+void Intercomm::isend_datagram(const uint8_t *tx_data_buf)
+{
+    tx_datagram.magic0 = 'I';
+    tx_datagram.magic1 = 'C';
+    tx_datagram.flag_ack = false;
+    tx_datagram.flag_datagram = true;
+
+    tx_datagram.custom[0] = tx_data_buf[0];
+    tx_datagram.custom[1] = tx_data_buf[1];
+    tx_datagram.custom[2] = tx_data_buf[2];
+    tx_datagram.custom[3] = tx_data_buf[3];
+
+    auto tx_hdr_ptr = (const uint8_t *)&tx_datagram;
+    tx_datagram.hdr_chksum = InternetChecksum(tx_hdr_ptr, IC_HEADER_SIZE - 2);
+
+    serial.write(tx_hdr_ptr, IC_HEADER_SIZE);
+    serial.flush();
 }
 
 void Intercomm::sendAck()
@@ -70,6 +93,7 @@ void Intercomm::sendAck()
     tx_hdr.hdr_chksum = InternetChecksum(tx_hdr_ptr, IC_HEADER_SIZE - 2);
 
     serial.write(tx_hdr_ptr, IC_HEADER_SIZE);
+    serial.flush();
 
     // printf("sent ack for rx chksum %d\n", rx_data_chksum);
 }
@@ -77,6 +101,11 @@ void Intercomm::sendAck()
 void Intercomm::send(const uint8_t *tx_data_buf, int len)
 {
     isend(tx_data_buf, len, 0);
+}
+
+void Intercomm::sendDatagram(const uint8_t *custom)
+{
+    isend_datagram(custom);
 }
 
 bool Intercomm::ackReceived()
@@ -132,17 +161,26 @@ void Intercomm::loop()
 
             if (chksum == rx_hdr.hdr_chksum)
             {
-                if (rx_hdr.flag_ack && waiting_ack && rx_hdr.data_ack_chksum == tx_data_chksum)
+                if (rx_hdr.flag_datagram)
                 {
-                    waiting_ack = false;
                     rx_hdr_buf_off = 0;
-                    tx_retry = 0;
+                    if (rxDatagramCallback != NULL)
+                        rxDatagramCallback(((IC_Header_Datagram&)rx_hdr).custom);
                 }
                 else
                 {
-                    ++rx_hdr_buf_off;
+                    if (rx_hdr.flag_ack && waiting_ack && rx_hdr.data_ack_chksum == tx_data_chksum)
+                    {
+                        waiting_ack = false;
+                        rx_hdr_buf_off = 0;
+                        tx_retry = 0;
+                    }
+                    else
+                    {
+                        ++rx_hdr_buf_off;
 
-                    rx_data_buf_off = 0;
+                        rx_data_buf_off = 0;
+                    }
                 }
             }
             else
